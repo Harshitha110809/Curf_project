@@ -1,0 +1,54 @@
+name: curf_app
+description: "CURF Campus Safety – Smart Digital Out-Pass & Real-Time Entry Logger System"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  qr_flutter: ^4.1.0
+  image_picker: ^1.1.2
+  #screen_protector: ^1.4.0
+  # Backend, Authentication & Database
+  supabase_flutter: ^2.6.0
+  ntp: ^2.0.0
+
+  # State Management & Architectural Flow
+  flutter_riverpod: ^2.5.1
+  go_router: ^14.0.1
+
+  # Local Persistence & Device Utilities
+  flutter_secure_storage: ^9.2.2
+  connectivity_plus: ^6.1.0
+  permission_handler: ^11.3.1
+
+  # System Hardware Integrations
+  geolocator: ^13.0.2
+  flutter_local_notifications: ^17.2.2
+  # ADDED: Real-time Camera QR Scanner
+  mobile_scanner: ^5.0.0
+
+  # Typography & Design System Alignment
+  google_fonts: ^6.2.1
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/curf_logo.png
+
+flutter_native_splash:
+  color: "#1E275D"
+  image: "assets/images/curf_logo.png"
+  android_12:
+    color: "#1E275D"
+    image: "assets/images/curf_logo.png"
+  web: false
