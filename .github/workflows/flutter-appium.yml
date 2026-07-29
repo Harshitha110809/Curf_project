@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-latest # macOS is usually best for mobile emulators in Actions, or ubuntu with KVM
+    runs-on: macos-13 # macos-13 is the Intel runner. macos-latest is Apple Silicon (M1) and crashes x86_64 emulators!
     
     steps:
       - name: 1. Checkout Repository
