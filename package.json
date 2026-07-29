@@ -8,7 +8,7 @@
     "report:merge": "mochawesome-merge reports/json/*.json > reports/mochawesome.json",
     "report:generate": "marge reports/mochawesome.json -f report -o reports/html",
     "test:full": "npm run test & npm run report:merge & npm run report:generate",
-    "test:ci": "npx mocha tests/e2e/boundaryValidation.test.js --reporter mochawesome --reporter-options reportDir=reports/json,reportFilename=results && npm run report:merge && npm run report:generate && node src/utils/excelReporter.js"
+    "test:ci": "npx mocha tests/e2e/boundaryValidation.test.js --reporter mochawesome --reporter-options reportDir=reports/json,reportFilename=results && npm run report:merge && npm run report:generate && node src/utils/ciExcelReporter.js"
   },
   "dependencies": {
     "appium": "^2.11.3",
