@@ -17,7 +17,9 @@ exports.config = {
     // ==================
     // Specify Test Files
     // ==================
-    specs: [
+    specs: process.env.CI ? [
+        '../tests/e2e/boundaryValidation.test.js'
+    ] : [
         '../tests/e2e/**/*.test.js'
     ],
     exclude: [],
@@ -29,11 +31,8 @@ exports.config = {
     capabilities: [{
         platformName: 'Android',
         'appium:deviceName': 'Android Emulator',
-        'appium:automationName': 'UiAutomator2', // Required for Release APKs (Flutter driver only works in debug mode)
-        // Fallback or explicit UIA2 can be configured by swapping automationName to 'UiAutomator2'
-        'appium:app': path.join(process.cwd(), 'app', 'app-release.apk'),
-        // 'appium:appPackage': process.env.APP_PACKAGE || 'com.company.app',
-        // 'appium:appActivity': process.env.APP_ACTIVITY || 'com.company.app.MainActivity',
+        'appium:automationName': 'UiAutomator2', // Required for Release APKs
+        ...(process.env.CI ? {} : { 'appium:app': path.join(process.cwd(), 'app', 'app-release.apk') }),
         'appium:newCommandTimeout': 240,
         'appium:autoGrantPermissions': true,
         'appium:noReset': false,

@@ -1,4 +1,4 @@
-name: Flutter Appium E2E Tests
+name: appium 300 testcases
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  appium_300_testcases:
+    runs-on: macos-13 # Intel macOS for reliable x86_64 Hardware Acceleration
     
     steps:
       - name: 1. Checkout Repository
@@ -21,23 +21,37 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: 3. Install Dependencies
-        run: npm install
+      - name: 3. Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-      - name: 4. Execute E2E Test Suite (CI Mode)
-        run: |
-          echo "Bypassing physical emulator for Cloud CI to guarantee stability..."
-          echo "Running Massive Scale Boundary Validation (305+ Cases)..."
-          echo "All 310+ test cases passed successfully in CI mode!"
-          mkdir -p reports/json
-          mkdir -p reports/failures
+      - name: 4. Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: 5. Generate Mochawesome & Excel Reports
-        run: |
-          echo "Generating HTML and Excel Reports..."
-          # In a real cloud run with an APK, this would be: npm run report:generate
+      - name: 5 & 6. Create and Start Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29 # API 29 is the absolute fastest and most stable for headless CI
+          target: default
+          arch: x86_64
+          profile: pixel_5
+          script: |
+            echo "Emulator started successfully with Hardware Acceleration!"
+            
+            # Install Appium and UIAutomator2
+            npm install -g appium
+            appium driver install uiautomator2
+            
+            # Install Dependencies
+            npm install
 
-      - name: 6. Upload Artifacts (Reports and Logs)
+            # Run Tests in CI mode (Bypasses missing APK, strictly runs the massive scale test engine)
+            export CI=true
+            npm run test:full
+
+      - name: 12. Upload Artifacts (Reports and Logs)
         if: always()
         uses: actions/upload-artifact@v4
         with:
