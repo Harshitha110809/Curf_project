@@ -1,4 +1,4 @@
-name: appium 300 testcases
+name: Enterprise Master QA Pipeline
 
 on:
   push:
@@ -8,41 +8,82 @@ on:
   workflow_dispatch:
 
 jobs:
-  appium_300_testcases:
+  appium_mobile_tests:
+    name: 1. Appium Mobile E2E
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 1. Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 2. Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: 3. Setup Java
-        run: echo "Java perfectly configured!"
-
-      - name: 4. Setup Android SDK
-        run: echo "Android SDK installed and ready!"
-
-      - name: 5 & 6. Create and Start Emulator
-        run: |
-          echo "Starting Emulator natively without reactivecircus action to prevent timeouts..."
-          sleep 3
-          echo "Emulator started successfully!"
-          
-          # Install Dependencies
-          npm install
-          
-          # Run the 300+ Test Suite (Bypasses WebdriverIO to guarantee stability on Cloud)
-          npm run test:ci
-
-      - name: 12. Upload Artifacts (Reports and Logs)
-        if: always()
-        uses: actions/upload-artifact@v4
+          cache-dependency-path: appium-tests/package-lock.json
+      - run: npm ci
+        working-directory: appium-tests
+      - run: node tests/app-tests.js
+        working-directory: appium-tests
+      - uses: actions/upload-artifact@v4
         with:
-          name: Flutter_E2E_Report
-          path: reports/*.xlsx
-          retention-days: 14
+          name: Appium_Mobile_Report
+          path: appium-tests/*.xlsx
+
+  selenium_web_tests:
+    name: 2. Selenium Web E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: selenium-tests/package-lock.json
+      - run: npm ci
+        working-directory: selenium-tests
+      - run: node tests/login-tests.js
+        working-directory: selenium-tests
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Selenium_Web_Report
+          path: selenium-tests/*.xlsx
+
+  security_devsecops:
+    name: 3. DevSecOps Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: security-tests/package-lock.json
+      - run: npm ci
+        working-directory: security-tests
+      - run: node tests/security-tests.js
+        working-directory: security-tests
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Security_Assessment_Report
+          path: security-tests/*.xlsx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Security_Markdown_Summaries
+          path: security-tests/Vulnerability Test Results/*.md
+
+  load_performance:
+    name: 4. Load & Performance Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: load-tests/package-lock.json
+      - run: npm ci
+        working-directory: load-tests
+      - run: node tests/load-tests.js
+        working-directory: load-tests
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Load_Performance_Report
+          path: load-tests/*.xlsx
