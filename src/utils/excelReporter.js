@@ -83,7 +83,7 @@ async function generateExcelReport(results) {
                         const isFail = test.fail;
                         const row = testSheet.addRow({
                             id: `TC_${testId++}`,
-                            module: suite.title,
+                            module: subSuite.title || suite.title || 'E2E Testing',
                             scenario: test.title,
                             status: isPass ? 'Passed' : isFail ? 'Failed' : 'Skipped',
                             device: process.env.DEVICE_NAME || 'Emulator',
