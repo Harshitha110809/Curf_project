@@ -79,20 +79,34 @@ async function generateExcelReport(results) {
             data.results.forEach(suite => {
                 suite.suites.forEach(subSuite => {
                     subSuite.tests.forEach(test => {
-                        testSheet.addRow({
+                        const isPass = test.pass;
+                        const isFail = test.fail;
+                        const row = testSheet.addRow({
                             id: `TC_${testId++}`,
                             module: suite.title,
                             scenario: test.title,
-                            status: test.pass ? 'Passed' : test.fail ? 'Failed' : 'Skipped',
+                            status: isPass ? 'Passed' : isFail ? 'Failed' : 'Skipped',
                             device: process.env.DEVICE_NAME || 'Emulator',
                             duration: `${test.duration} ms`
                         });
 
-                        if (test.fail) {
+                        // Add Professional Color Coding to the Status Cell
+                        const statusCell = row.getCell('status');
+                        if (isPass) {
+                            statusCell.font = { color: { argb: 'FF008000' }, bold: true };
+                            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCFFCC' } };
+                        } else if (isFail) {
+                            statusCell.font = { color: { argb: 'FFFF0000' }, bold: true };
+                            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCCCC' } };
+                        } else {
+                            statusCell.font = { color: { argb: 'FF808080' }, bold: true };
+                        }
+
+                        if (isFail) {
                             failSheet.addRow({
                                 name: test.title,
                                 reason: test.err ? test.err.message : 'Unknown error',
-                                screenshot: `failures/${test.title.replace(/\\s+/g, '_')}.png`,
+                                screenshot: `failures/${test.title.replace(/\s+/g, '_')}.png`,
                                 device: process.env.DEVICE_NAME || 'Emulator',
                                 version: process.env.ANDROID_VERSION || 'N/A'
                             });

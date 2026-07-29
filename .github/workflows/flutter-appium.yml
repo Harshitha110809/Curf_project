@@ -43,6 +43,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E2E-Test-Artifacts
-          path: reports/
+          name: Flutter_E2E_Report
+          path: reports/*.xlsx
           retention-days: 14
