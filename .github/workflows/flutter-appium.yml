@@ -1,4 +1,4 @@
-name: appium 300 testcases
+name: Enterprise Master QA Pipeline
 
 on:
   push:
@@ -8,56 +8,103 @@ on:
   workflow_dispatch:
 
 jobs:
-  appium_300_testcases:
+  appium_mobile_tests:
+    name: 1. Appium Mobile E2E
     runs-on: ubuntu-latest
-    
     steps:
       - name: 1. Checkout Repository
         uses: actions/checkout@v4
-
-      - name: 2. Setup Node.js
+      - name: 2. Setup Node.js (v24)
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-
-      - name: 3. Setup Java
-        run: echo "Java perfectly configured!"
-
-      - name: 4. Setup Android SDK
-        run: echo "Android SDK installed and ready!"
-
-      - name: 5 & 6. Create and Start Emulator
-        run: |
-          echo "Starting Emulator natively to prevent timeouts..."
-          sleep 3
-          echo "Emulator started successfully!"
-          
-          # Prepare unified reports directory in the project root
-          mkdir -p reports
-          
-          echo "Running Base Boundary Validation..."
-          npm install
-          npm run test:ci
-          
-          echo "Running Appium Mobile Suite..."
-          cd appium-tests && npm install && node tests/app-tests.js && cp *.xlsx ../reports/ && cd ..
-          
-          echo "Running Selenium Web Suite..."
-          cd selenium-tests && npm install && node tests/login-tests.js && cp *.xlsx ../reports/ && cd ..
-          
-          echo "Running DevSecOps Security Scan..."
-          cd security-tests && npm install && node tests/security-tests.js && cp *.xlsx ../reports/ && cd ..
-          
-          echo "Running Load Performance Test..."
-          cd load-tests && npm install && node tests/load-tests.js && cp *.xlsx ../reports/ && cd ..
-          
-          echo "All 4 pillars completed successfully! Reports synchronized to root folder."
-
-      - name: 12. Upload Artifacts (Reports and Logs)
-        if: always()
+          cache-dependency-path: appium-tests/package-lock.json
+      - name: 3. Install Core Dependencies
+        run: npm ci
+        working-directory: appium-tests
+      - name: 4. Execute Mobile E2E Suite (Appium)
+        run: node tests/app-tests.js
+        working-directory: appium-tests
+      - name: 5. Upload Mobile Reports
         uses: actions/upload-artifact@v4
         with:
-          name: Enterprise_Master_QA_Reports
-          path: reports/*.xlsx
-          retention-days: 14
+          name: Appium_Mobile_Report
+          path: appium-tests/*.xlsx
+
+  selenium_web_tests:
+    name: 2. Selenium Web E2E
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+      - name: 2. Setup Node.js (v24)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: selenium-tests/package-lock.json
+      - name: 3. Install Web Dependencies
+        run: npm ci
+        working-directory: selenium-tests
+      - name: 4. Execute Web E2E Suite (Selenium)
+        run: node tests/login-tests.js
+        working-directory: selenium-tests
+      - name: 5. Upload Web Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: Selenium_Web_Report
+          path: selenium-tests/*.xlsx
+
+  security_devsecops:
+    name: 3. DevSecOps Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+      - name: 2. Setup Node.js (v24)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: security-tests/package-lock.json
+      - name: 3. Install Security Toolchain
+        run: npm ci
+        working-directory: security-tests
+      - name: 4. Execute SAST & DAST Scan
+        run: node tests/security-tests.js
+        working-directory: security-tests
+      - name: 5. Upload Security Assessment
+        uses: actions/upload-artifact@v4
+        with:
+          name: Security_Assessment_Report
+          path: security-tests/*.xlsx
+      - name: 6. Upload Vulnerability Summaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: Security_Markdown_Summaries
+          path: security-tests/Vulnerability Test Results/*.md
+
+  load_performance:
+    name: 4. Load & Performance Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+      - name: 2. Setup Node.js (v24)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: load-tests/package-lock.json
+      - name: 3. Install Load Generators
+        run: npm ci
+        working-directory: load-tests
+      - name: 4. Execute Performance Simulation (100 VU)
+        run: node tests/load-tests.js
+        working-directory: load-tests
+      - name: 5. Upload Load Metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: Load_Performance_Report
+          path: load-tests/*.xlsx
