@@ -1,49 +1,64 @@
-name: Flutter Appium E2E Automation
+name: Flutter Appium E2E Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
-  e2e-tests:
-    runs-on: ubuntu-latest
-
+  test:
+    runs-on: macos-latest # macOS is usually best for mobile emulators in Actions, or ubuntu with KVM
+    
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: 2. Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-    - name: Install Dependencies
-      run: npm install
+      - name: 3. Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
-    - name: Run Massive 1200 Test Suite
-      run: |
-        npm run test:ci || true
-        node utils/excelReporter.js
+      - name: 4. Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-    - name: Upload Mochawesome Report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: html-report
-        path: reports/html/
+      - name: 5 & 6. Create and Start Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31 # Android 12
+          target: default
+          arch: x86_64
+          profile: pixel_5
+          script: |
+            echo "Emulator started successfully"
+            # 7. Install Appium
+            npm install -g appium
+            appium driver install uiautomator2
+            # For flutter driver, typically uiautomator2 is the fallback or we install flutter driver
+            appium driver install flutter || true
+            
+            # 8. Install Dependencies
+            npm ci
 
-    - name: Upload Excel Report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: excel-report
-        path: reports/Flutter_E2E_Report.xlsx
+            # 9. Install APK & 10. Run Tests & 11. Generate Reports
+            # Assuming the APK is already in the repo or downloaded in a previous step
+            # 'npm run test:full' executes wdio, mochawesome merge, and HTML report generation
+            npm run test:full
 
-    - name: Upload Failure Artifacts
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: failure-screenshots-and-logs
-        path: reports/failures/
+      - name: 12. Upload Artifacts (Reports and Logs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E2E-Test-Artifacts
+          path: |
+            reports/
+            !reports/json/
+          retention-days: 14

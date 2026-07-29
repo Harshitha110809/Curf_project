@@ -1,54 +1,63 @@
-# Flutter Appium E2E Automation Framework
+# Flutter Appium Automation Framework
 
-An enterprise-grade, robust End-to-End automation framework for testing Flutter Android APKs using Node.js, Appium 2.x, Mocha, and the Page Object Model architecture.
+This is an enterprise-grade End-to-End (E2E) automation framework built for testing Flutter Android applications using Node.js, Appium 2.x, WebdriverIO (Mocha), and Chai.
 
 ## Features
-- **Flutter Support**: Integrates `appium-flutter-driver` for native Flutter widget interaction (`byValueKey`, `byText`, `bySemanticsLabel`).
-- **Reporting**: Generates multi-sheet Excel reports and HTML reports via Mochawesome.
-- **Resilience**: Automatic screenshot and widget tree capture on test failure.
-- **Gestures**: Reusable utility for common gestures (swipe, scroll, long press).
-- **CI/CD Ready**: Fully configured GitHub Actions workflow for automated execution on macOS runners with hardware-accelerated Android Emulators.
-- **AI-Assisted Testing Module**: A script to parse Flutter Render Trees and suggest test coverage.
+- **Appium 2.x & WebdriverIO**: Industry-standard robust client.
+- **Flutter Support**: Compatible with `appium-flutter-driver` and `UiAutomator2`.
+- **Page Object Model (POM)**: Highly maintainable architecture.
+- **Advanced Reporting**: Generates both `Mochawesome` HTML reports and `ExcelJS` multi-sheet `.xlsx` reports.
+- **Smart AI Module (Stub)**: Foundation for AI-based test generation and dynamic field validation.
+- **Failure Handling**: Automatically captures screenshots, device logs (`logcat`), and UI XML/JSON source on test failures.
+- **Gestures Utility**: Reusable swipe, scroll, tap, double tap, and drag-and-drop utilities.
+- **CI/CD Ready**: Fully configured GitHub Actions workflow (`.github/workflows/flutter-appium.yml`) for automated emulator setup and test execution.
 
-## Prerequisites
-- Node.js (v18+)
-- Java JDK 17
-- Android SDK & Emulator
-- Appium 2.x (`npm i -g appium`)
-- Appium Drivers:
-  - `appium driver install uiautomator2`
-  - `appium driver install flutter`
+## Project Structure
+```
+├── app/                  # Place your app-release.apk here
+├── config/
+│   └── wdio.conf.js      # Core Appium and Runner configuration
+├── src/
+│   ├── core/             # Logger, Driver setup
+│   ├── pages/            # Page Objects (BasePage, LoginPage, FormPage)
+│   └── utils/            # Gestures, ExcelReporter, FailureHandler, AITester
+├── tests/
+│   └── e2e/              # Mocha Test Suites (auth, formValidation, etc.)
+├── reports/              # Generated JSON, HTML, and Excel reports
+└── package.json          # Dependencies and npm scripts
+```
 
-## Setup
-1. Clone the repository.
-2. Run `npm install` to install dependencies.
-3. Place your target APK in the `app/` directory and name it `app-release.apk` (or update `config/capabilities.js`).
-4. Start Appium server in a separate terminal: `appium`
-5. Ensure an Android Emulator is running or a real device is connected.
+## Setup Guide
 
-## Directory Structure
-- `config/`: Appium capabilities and logger config.
-- `core/`: Driver singleton, Base Page Object, and Gesture utilities.
-- `pages/`: Page Object classes (e.g., `login.page.js`).
-- `tests/e2e/`: Mocha test scripts.
-- `utils/`: Excel report generator and failure handler.
-- `ai/`: Smart AI tester module.
-- `reports/`: Output directory for HTML/Excel reports, logs, and failure artifacts.
+### Prerequisites
+1. **Node.js** (v18 or higher recommended)
+2. **Java JDK 11+**
+3. **Android SDK** (with an Emulator configured or real device connected via ADB)
+4. **Appium 2.x**:
+   ```bash
+   npm install -g appium
+   appium driver install uiautomator2
+   appium driver install flutter
+   ```
 
-## Execution
-**Run locally:**
+### Installation
+1. Clone this repository.
+2. Run `npm install` to install all dependencies.
+3. Place your target APK inside the `app/` directory and name it `app-release.apk` (or update the path in `config/wdio.conf.js`).
+
+### Execution
+Run tests locally using the standard test command:
 ```bash
 npm run test
 ```
 
-**Run in CI mode (generates HTML and Excel reports):**
+To run tests and automatically merge/generate Mochawesome HTML reports:
 ```bash
-npm run test:ci
-node utils/excelReporter.js
+npm run test:full
 ```
 
-## Reports
-- **HTML Report**: Found in `reports/html/index.html`
-- **Excel Report**: Found in `reports/Flutter_E2E_Report.xlsx`
-- **Execution Logs**: `reports/logs/execution.log`
-- **Failures (Screenshots/Trees)**: `reports/failures/`
+### Reports
+- **HTML Report**: Found in `reports/html/report.html`
+- **Excel Report**: Found at `reports/Flutter_E2E_Report.xlsx`
+- **Logs**: Execution logs are found at `reports/execution.log`
+- **Failures**: Screenshots and source trees for failed tests are saved in `reports/failures/`

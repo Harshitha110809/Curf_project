@@ -1,23 +1,40 @@
 {
-  "name": "flutter-appium-e2e-framework",
+  "name": "flutter-appium-framework",
   "version": "1.0.0",
-  "description": "Enterprise-grade E2E automation framework for Flutter Android APKs using Appium 2.x",
+  "description": "E2E Automation Framework for Flutter Apps using Appium",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/**/*.spec.js --timeout 90000",
-    "test:ci": "mocha tests/**/*.spec.js --timeout 120000 --reporter mochawesome --reporter-options reportDir=reports/html,reportFilename=index",
-    "lint": "eslint ."
+    "test": "wdio run ./config/wdio.conf.js",
+    "report:merge": "mochawesome-merge reports/json/*.json > reports/mochawesome.json",
+    "report:generate": "marge reports/mochawesome.json -f report -o reports/html",
+    "test:full": "npm run test & npm run report:merge & npm run report:generate"
   },
   "dependencies": {
-    "appium-flutter-driver": "^2.0.0",
-    "exceljs": "^4.4.0",
-    "selenium-webdriver": "^4.46.0",
-    "webdriverio": "^8.38.2",
-    "winston": "^3.13.0"
+    "appium": "^2.11.3",
+    "appium-flutter-driver": "^2.6.2",
+    "appium-uiautomator2-driver": "^3.7.8"
   },
   "devDependencies": {
+    "@wdio/appium-service": "^9.0.0",
+    "@wdio/cli": "^9.30.0",
+    "@wdio/local-runner": "^9.0.0",
+    "@wdio/mocha-framework": "^9.0.0",
+    "@wdio/spec-reporter": "^9.0.0",
     "chai": "^4.4.1",
-    "mocha": "^10.4.0",
-    "mochawesome": "^7.1.3"
-  }
+    "exceljs": "^4.4.0",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^4.3.0",
+    "mochawesome-report-generator": "^6.2.0",
+    "wdio-mochawesome-reporter": "^7.0.0",
+    "winston": "^3.14.2"
+  },
+  "keywords": [
+    "flutter",
+    "appium",
+    "automation",
+    "qa",
+    "e2e"
+  ],
+  "author": "",
+  "license": "ISC"
 }
