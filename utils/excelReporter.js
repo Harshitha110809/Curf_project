@@ -11,79 +11,53 @@ async function generateExcelReport() {
 
     const reportData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     const workbook = new ExcelJS.Workbook();
-    
-    // Sheet 1 - Summary
-    const summarySheet = workbook.addWorksheet('Summary');
-    summarySheet.columns = [
-        { header: 'Metric', key: 'metric', width: 20 },
-        { header: 'Value', key: 'value', width: 30 }
-    ];
-    summarySheet.addRow({ metric: 'Execution Date', value: new Date().toISOString() });
-    
-    // Safely parse mochawesome stats
-    if (reportData.stats) {
-        summarySheet.addRow({ metric: 'Total Tests', value: reportData.stats.tests });
-        summarySheet.addRow({ metric: 'Passed', value: reportData.stats.passes });
-        summarySheet.addRow({ metric: 'Failed', value: reportData.stats.failures });
-        summarySheet.addRow({ metric: 'Skipped', value: reportData.stats.pending });
-        summarySheet.addRow({ metric: 'Pass Percentage', value: `${reportData.stats.passPercent}%` });
-        summarySheet.addRow({ metric: 'Duration (ms)', value: reportData.stats.duration });
-    }
-    
-    // Sheet 2 - Test Cases
-    const testCasesSheet = workbook.addWorksheet('Test Cases');
-    testCasesSheet.columns = [
-        { header: 'Test Name', key: 'title', width: 50 },
-        { header: 'Status', key: 'state', width: 15 },
-        { header: 'Duration (ms)', key: 'duration', width: 15 }
-    ];
 
-    // Sheet 3 - Failed Tests
-    const failedSheet = workbook.addWorksheet('Failed Tests');
-    failedSheet.columns = [
-        { header: 'Test Name', key: 'title', width: 50 },
-        { header: 'Failure Reason', key: 'error', width: 80 }
-    ];
+    // The 4 requested sheets
+    const sheets = {
+        'Appium': workbook.addWorksheet('Appium Mobile Tests'),
+        'Selenium': workbook.addWorksheet('Selenium Web Tests'),
+        'Load': workbook.addWorksheet('Performance Load Tests'),
+        'Security': workbook.addWorksheet('Vulnerability Tests')
+    };
+
+    // Setup headers for all 4 sheets
+    Object.values(sheets).forEach(sheet => {
+        sheet.columns = [
+            { header: 'Test ID & Name', key: 'title', width: 80 },
+            { header: 'Status', key: 'state', width: 20 },
+            { header: 'Duration (ms)', key: 'duration', width: 15 }
+        ];
+        sheet.getRow(1).font = { bold: true };
+    });
 
     if (reportData.results) {
         reportData.results.forEach(result => {
             result.suites.forEach(suite => {
+                // Determine which sheet to place this suite's tests into
+                let targetSheet;
+                if (suite.title.includes('[Appium]')) targetSheet = sheets['Appium'];
+                else if (suite.title.includes('[Selenium]')) targetSheet = sheets['Selenium'];
+                else if (suite.title.includes('[Load]')) targetSheet = sheets['Load'];
+                else if (suite.title.includes('[Security]')) targetSheet = sheets['Security'];
+                else targetSheet = sheets['Appium']; // fallback
+
                 suite.tests.forEach(test => {
-                    testCasesSheet.addRow({
+                    // Convert 'passed' to a tick mark ✓
+                    const statusIcon = test.state === 'passed' ? '✓ Passed' : (test.state === 'failed' ? '❌ Failed' : '⏸ Skipped');
+                    
+                    targetSheet.addRow({
                         title: test.title,
-                        state: test.state || 'skipped',
+                        state: statusIcon,
                         duration: test.duration || 0
                     });
-                    
-                    if (test.state === 'failed') {
-                        failedSheet.addRow({
-                            title: test.title,
-                            error: test.err ? test.err.message : 'Unknown'
-                        });
-                    }
                 });
             });
         });
     }
 
-    // Sheet 4 - Execution Logs
-    const logSheet = workbook.addWorksheet('Execution Logs');
-    logSheet.columns = [
-        { header: 'Log Content', key: 'content', width: 100 }
-    ];
-    const logFile = path.join(process.cwd(), 'reports', 'logs', 'execution.log');
-    if (fs.existsSync(logFile)) {
-        const logs = fs.readFileSync(logFile, 'utf8').split('\n');
-        logs.forEach(line => {
-            if (line.trim()) {
-                logSheet.addRow({ content: line });
-            }
-        });
-    }
-
     const excelPath = path.join(process.cwd(), 'reports', 'Flutter_E2E_Report.xlsx');
     await workbook.xlsx.writeFile(excelPath);
-    console.log(`Excel report generated at: ${excelPath}`);
+    console.log(`Excel report generated with 4 sheets at: ${excelPath}`);
 }
 
 if (require.main === module) {
