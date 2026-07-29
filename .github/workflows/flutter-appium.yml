@@ -22,7 +22,7 @@ jobs:
           cache: 'npm'
 
       - name: 3. Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: 4. Execute E2E Test Suite (CI Mode)
         run: |
